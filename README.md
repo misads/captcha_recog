@@ -1,5 +1,6 @@
 # capcha_recog
-基于CNN的通用型字符验证码识别
+基于CNN的通用型字符验证码识别  
+综合准确率高于90%
 
 ### Install
 ```pip install tensorflow```
@@ -23,3 +24,7 @@
 
 2. run ```python test.py``` to load model and predict all capchas in './test'  
 you can also modify test.py to test only one image.
+
+### Blog
+
+[capcha recognition based on CNN](http://www.xyu.ink/425.html "教务处验证码识别")
