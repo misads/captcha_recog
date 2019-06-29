@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import os
 
+from config import IMAGE_WIDTH, IMAGE_HEIGHT, CHAR_SET_LEN, CAPTCHA_LENGTH
 from handle_image import handle_image
 from model import x, keep_prob, crack_captcha_cnn
 
@@ -12,16 +13,16 @@ Y = []
 
 returnVect = np.zeros(10)
 returnVect[1] = 1
-for i in range(4):
+for i in range(CAPTCHA_LENGTH):
     Y.append(returnVect)
 
 
 # 将二值化后的图片转成195维向量
 def image2vector(img):
-    returnVect = np.zeros(64 * 24)
-    for i in range(24):
-        for j in range(64):
-            returnVect[64 * i + j] = int(img[i, j])
+    returnVect = np.zeros(IMAGE_WIDTH * IMAGE_HEIGHT)
+    for i in range(IMAGE_HEIGHT):
+        for j in range(IMAGE_WIDTH):
+            returnVect[IMAGE_WIDTH * i + j] = int(img[i, j])
 
     return returnVect
 
@@ -47,9 +48,9 @@ def ints2tag(ints):
 
 # 将标签转为36*4维向量
 def tag2vector(tag):
-    returnVect = np.zeros(36 * 4)
-    for i in range(4):
-        returnVect[36 * i + tag2int(tag[i])] = 1
+    returnVect = np.zeros(CHAR_SET_LEN * CAPTCHA_LENGTH)
+    for i in range(CAPTCHA_LENGTH):
+        returnVect[CHAR_SET_LEN * i + tag2int(tag[i])] = 1
     return returnVect
 
 
@@ -59,26 +60,27 @@ def opentag():
         l = f.readlines()
         for i in l:
             txt = i.rstrip()
-            if len(txt) == 4:
+            if len(txt) == CAPTCHA_LENGTH:
                 for j in txt:
                     Y.append(tag2vector(int(j)))
 
 
-def crack_captcha(captcha_image):
+def crack_captcha(captcha_image, samples):
     output = crack_captcha_cnn()
 
     saver = tf.train.Saver()
     with tf.Session() as sess:
         saver.restore(sess, tf.train.latest_checkpoint('checkpoint'))
 
-        predict = tf.argmax(tf.reshape(output, [-1, 4, 36]), 2)
+        predict = tf.argmax(tf.reshape(output, [-1, CAPTCHA_LENGTH, CHAR_SET_LEN]), 2)
 
         text_list = sess.run(predict, feed_dict={x: captcha_image, keep_prob: 1})
 
         for i in range(0, len(text_list)):
             text = text_list[i].tolist()
 
-            print(ints2tag(text))
+            print(samples[i] + ': ' + ints2tag(text))
+
 
 def predict(path):
     img = cv2.imread(path, 0)
@@ -93,17 +95,15 @@ def predict_dir(dirpath):
     Y2 = []
     samples = os.listdir(dirpath)
     samples.sort()
-    for i in range(1, 100):  # len(samples)
-        if i % 100 == 0:
-            print(i)
-        path = os.path.join(dirpath, '%d.png' % i)
+    for i in samples:  # len(samples)
+        path = os.path.join(dirpath, i)
 
         img = cv2.imread(path, 0)
         img = handle_image(img)
 
         X2.append(image2vector(img))
 
-    crack_captcha(X2)
+    crack_captcha(X2, samples)
 
 
 #predict('test/1.png')

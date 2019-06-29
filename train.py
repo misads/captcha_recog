@@ -40,7 +40,7 @@ def train():
                 # save and exit
                 if step > TRAINING_STEPS:
                     saver.save(sess, "checkpoint/test")
-                    print('saving checkpoint succeeded.')
+                    print('saving checkpoint succeed.')
                     break
 
             step += 1

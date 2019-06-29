@@ -56,7 +56,7 @@ def get_trainsets():
             print('read image %d' % i)
         path = os.path.join('train', samples[i])
         # the image file name is <tag>.png
-        tag = path[-8:-4]
+        tag = samples[i][0:4]
 
         img = cv2.imread(path, 0)
         # 去掉边框后为 64*24
