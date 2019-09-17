@@ -1,13 +1,13 @@
 # encoding=utf-8
 import tensorflow as tf
 
-from get_batch import get_next_batch, get_trainsets
+from get_batch import get_next_batch, get_datasets, get_validation
 from config import IMAGE_HEIGHT, IMAGE_WIDTH, CAPTCHA_LENGTH, CHAR_SET_LEN, BATCH_SIZE, TRAINING_STEPS
 from model import crack_captcha_cnn, y_, keep_prob, x
 
 
 def train():
-    get_trainsets()
+    get_datasets()
 
     output = crack_captcha_cnn()
 
@@ -30,18 +30,25 @@ def train():
             batch_x, batch_y = get_next_batch(step, BATCH_SIZE)
             _, loss_ = sess.run([optimizer, loss], feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.75})
 
-
-            # calculate accuracy
+            # training accuracy
             if step % 100 == 0:
                 batch_x_test, batch_y_test = get_next_batch(step, 100)
                 acc = sess.run(accuracy, feed_dict={x: batch_x_test, y_: batch_y_test, keep_prob: 1.})
                 print('iterator:%d  loss:%f' % (step, loss_))
-                print('accuracy:%f' % acc)
+                print('training accuracy:%f' % acc)
                 # save and exit
                 if step > TRAINING_STEPS:
                     saver.save(sess, "checkpoint/test")
                     print('saving checkpoint succeed.')
                     break
+
+            # validation accuracy
+            if step % 1000 ==0:
+                val_x, val_y = get_validation()
+                acc = sess.run(accuracy, feed_dict={x: val_x, y_: val_y, keep_prob: 1.})
+
+                print('\033[1;32miterator:%d' % step)
+                print('validation accuracy:%f\033[0m' % acc)
 
             step += 1
 

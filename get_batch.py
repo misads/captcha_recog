@@ -4,12 +4,14 @@ import os
 import cv2
 import numpy as np
 
-from config import DATASET_SIZE, IMAGE_WIDTH, IMAGE_HEIGHT, CAPTCHA_LENGTH, CHAR_SET_LEN
+from config import DATASET_SIZE, IMAGE_WIDTH, IMAGE_HEIGHT, CAPTCHA_LENGTH, CHAR_SET_LEN, TRAINING_DATA_RATE
 from handle_image import handle_image
 
 X = []
 Y = []
 
+val_x = []
+val_y = []
 
 # 将二值化后的图片转成向量
 def image2vector(img):
@@ -48,10 +50,10 @@ def opentag():
                     Y.append(tag2vector(int(j)))
 
 
-def get_trainsets():
+def get_datasets():
     samples = os.listdir('train')
 
-    for i in range(0, DATASET_SIZE):  # len(samples)
+    for i in range(0, int(TRAINING_DATA_RATE * len(samples))):
         if i % 100 == 0:
             print('read image %d' % i)
         path = os.path.join('train', samples[i])
@@ -67,6 +69,21 @@ def get_trainsets():
         Y.append(tag2vector(tag))
         # or use opentag() if all tags are save in one file
 
+    for i in range(int(TRAINING_DATA_RATE * len(samples)), len(samples)):
+        if i % 100 == 0:
+            print('read image %d' % i)
+        path = os.path.join('train', samples[i])
+        # the image file name is <tag>.png
+        tag = samples[i][0:4]
+
+        img = cv2.imread(path, 0)
+        # 去掉边框后为 64*24
+
+        img = handle_image(img)
+
+        val_x.append(image2vector(img))
+        val_y.append(tag2vector(tag))
+
 
 def get_next_batch(step, batch_size=128):
     start = step % DATASET_SIZE
@@ -81,3 +98,7 @@ def get_next_batch(step, batch_size=128):
         batch_y = batch_y + Y[0:addition]
 
     return batch_x, batch_y
+
+
+def get_validation():
+    return val_x, val_y

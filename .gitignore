@@ -108,3 +108,5 @@ checkpoint/
 train/
 test/
 .idea/
+train.zip
+test.zip
