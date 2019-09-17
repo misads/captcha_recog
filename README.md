@@ -2,6 +2,8 @@
 基于CNN的通用型字符验证码识别  
 综合准确率高于90%
 
+![准确率](http://www.xyu.ink/wp-content/uploads/2019/01/capcha_train.png)  
+
 ### Model graph
  
 ![graph](http://www.xyu.ink/wp-content/uploads/2019/01/graph_run.png)
